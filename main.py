@@ -39,7 +39,43 @@ def display_flow_data(n, capacities, costs=None):
     if costs:
         print_matrix(costs, "Cost Matrix")
 
+
+"""
+A MODIFIER : 
+
+- Prendre ce qui est stock en mememoire pas relire le file
+- Attention la je met propo [1] mais comme c pr les propo >5 la cost matrix est en bas
+- Le bail de mutlipilier float(inf) avec n 
+
+"""
+def Bellman_algo(proposal):
+    n = proposal[0]
+    s = proposal[1]
+    distances = [float('inf')]*int(n)
+    distances[s] = 0
+
+    edges = []
+    for i in range (n):
+        for y in range(n):
+            if proposal[i][y] != '0' and i != y:
+                edges.append((i,y,proposal[i][y]))
+
+    #Algo
+    for v in range(n-1):
+        for i, y, cost in edges:
+            if distances[i] + cost < distances[y]:
+                distances[y] = distances[i] + cost
+
+    return distances
+
+
+
 if __name__ == "__main__":
     fichier = "p1.txt"
     n, capacites, couts = read_file(fichier)
     display_flow_data(n, capacites, couts)
+
+    pp= "proposal 6.txt"
+    test_bellman = Bellman_algo(pp)
+
+    print(test_bellman)
