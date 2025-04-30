@@ -82,6 +82,6 @@ if __name__ == "__main__":
 
     if cout:
         distance, pred = Bellman_algo(a, cout, s=0)
-        print("   Vertex  :   ", distance, "\nPredecessors : ",pred)
+        print("\nBellman Results:\n   Vertex  :   ", distance, "\nPredecessors : ",pred)
     else:
         print("Not a min-costs Problem")
