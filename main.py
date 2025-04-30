@@ -48,34 +48,37 @@ A MODIFIER :
 - Le bail de mutlipilier float(inf) avec n 
 
 """
-def Bellman_algo(proposal):
-    n = proposal[0]
-    s = proposal[1]
-    distances = [float('inf')]*int(n)
+def Bellman_algo(n, costs_mat, s = 0):
+
+    predecessor = [None]*n
+    distances = [float('inf')]*n
     distances[s] = 0
 
     edges = []
-    for i in range (n):
+    for i in range(n):
         for y in range(n):
-            if proposal[i][y] != '0' and i != y:
-                edges.append((i,y,proposal[i][y]))
+            if costs_mat[i][y] != '0' and costs_mat[i][y] != 0: #and i != y
+                edges.append((i,y,costs_mat[i][y]))
 
-    #Algo
+
+    # Bellman Algo
     for v in range(n-1):
         for i, y, cost in edges:
             if distances[i] + cost < distances[y]:
                 distances[y] = distances[i] + cost
+                predecessor[y] = i
 
-    return distances
-
+    return distances, predecessor
 
 
 if __name__ == "__main__":
     fichier = "p1.txt"
-    n, capacites, couts = read_file(fichier)
-    display_flow_data(n, capacites, couts)
+    n, capacites, costs = read_file(fichier)
+    display_flow_data(n, capacites, costs)
 
     pp= "proposal 6.txt"
-    test_bellman = Bellman_algo(pp)
-
-    print(test_bellman)
+    a, capa, cout = read_file(pp)
+    if costs:
+        distance, pred = Bellman_algo(a, cout, s=0)
+    else:
+        print("Not a min-costs Problem")
