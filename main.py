@@ -50,9 +50,9 @@ A MODIFIER :
 """
 def Bellman_algo(n, costs_mat, s = 0):
 
-    predecessor = [None]*n
-    distances = [float('inf')]*n
-    distances[s] = 0
+    predecessor = [None]*n #
+    distances = [float('inf')]*n # Initiate the distance of every vertex to infinty
+    distances[s] = 0 # The distance from the source to itself is 0
 
     edges = []
     for i in range(n):
@@ -78,7 +78,10 @@ if __name__ == "__main__":
 
     pp= "proposal 6.txt"
     a, capa, cout = read_file(pp)
-    if costs:
+    display_flow_data(a, capa, cout)
+
+    if cout:
         distance, pred = Bellman_algo(a, cout, s=0)
+        print("   Vertex  :   ", distance, "\nPredecessors : ",pred)
     else:
         print("Not a min-costs Problem")
