@@ -117,11 +117,89 @@ def Breadth_Search(n, capacities, source=0):
 
     return visited
 
+"""
 def Ford_Fulkerson(n, capacities, source=0):
+
     for i in range(n):
         if capacities[i][-1] == 0: #check que T ait des predecesseurs car sinon c'est deja opti / Donc check si la last column est que 0
-            print("The problem is already solved")
+            return "The problem is already solved"
 
+    chaine_ameliorante = Breadth_Search(n, capacities, source)
+
+"""
+
+#------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------
+
+"""FF avec une nouvelle version de parcours en largeur (encore)
+car mon precedent parcours L (ui est ecnore en haut) ne faisais pas tous ce qui est necessaire pour FF / Edmond karp
+
+A MODIF POUR AVOIR TOUTES LES ETAPES DEMANDE DANS LE SUJET
+"""
+def breadth_search_augmenting_path(residual, source, sink, parent):
+    n = len(residual)
+    visited = [False] * n
+    queue = deque([source])
+    visited[source] = True
+
+    while queue:
+        u = queue.popleft()
+        for v in range(n):
+            if not visited[v] and residual[u][v] > 0:
+                parent[v] = u
+                visited[v] = True
+                queue.append(v)
+                if v == sink:
+                    return True
+    return False
+
+def reconstruct_path(parent, source, sink):
+    path = []
+    v = sink
+    while v != source:
+        path.insert(0, v)
+        v = parent[v]
+    path.insert(0, source)
+    return path
+
+def print_matrix(matrix, title="Matrix"):
+    n = len(matrix)
+    print(f"\n{title} ({n}x{n})")
+    header = ["    "] + [f"v{j+1:>4}" for j in range(n)]
+    print("".join(header))
+    print("    " + "-----" * n)
+    for i in range(n):
+        row = [f"v{i+1:<3}|"] + [f"{val:>5}" for val in matrix[i]]
+        print("".join(row))
+
+def ford_fulkerson(n, capacities, source, sink):
+    residual = [row[:] for row in capacities]  # graphe résiduel
+    parent = [None] * n
+    max_flow = 0
+    step = 1
+
+    while breadth_search_augmenting_path(residual, source, sink, parent):
+        path = reconstruct_path(parent, source, sink)
+        path_flow = float('inf')
+        for i in range(len(path) - 1):
+            u, v = path[i], path[i + 1]
+            path_flow = min(path_flow, residual[u][v])
+
+        print(f"🔁 Chemin augmentant {step} : {' → '.join(f'v{x+1}' for x in path)} (flot = {path_flow})")
+        step += 1
+
+        # Appliquer le flot au graphe résiduel
+        for i in range(len(path) - 1):
+            u, v = path[i], path[i + 1]
+            residual[u][v] -= path_flow
+            residual[v][u] += path_flow
+
+        max_flow += path_flow
+
+    print_matrix(residual, "Graphe résiduel final")
+    return max_flow
+#------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
@@ -143,3 +221,12 @@ if __name__ == "__main__":
     visited_order = Breadth_Search(n, capacities, source=0)
 
     print("Ordre de visite BFS :", [f"v{i + 1}" for i in visited_order])
+
+
+    display_flow_data(n, capacities, costs)
+
+    source = 0  # v1
+    sink = n - 1  # v6
+
+    flow = ford_fulkerson(n, capacities, source, sink)
+    print(f"\nFlot maximum de v{source + 1} à v{sink + 1} : {flow}")
