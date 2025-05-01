@@ -1,3 +1,4 @@
+from collections import deque
 def read_file(file):
     with open(file, "r") as f:
         lines = f.readlines()
@@ -70,11 +71,56 @@ def Bellman_algo(n, costs_mat, s = 0):
 
     return distances, predecessor
 
+" Peut etre faut ajouter un truc de shortest past ??"
+
+"Bref la j'en suis à F-F partie 3 projet"
+
+"""
+VERSION 1 
+def Breatdh_Search(n, capacities, source=0):
+    path = []
+    queue = [source]
+    while len(queue) != 0:
+        new = queue[-1]
+        if new not in path:
+            path.append(new)
+            for y in range(n):
+                if capacities[queue[-1]][y] not in path: #and capacities[queue[-1]][y] not in queue
+                    #queue.append(capacities[queue[-1]][y])
+                    queue.append(y)
+                queue.pop(-1)    
+
+                
+
+
+        for i in range(n):
+            for y in range(n):
+                if capacities[i][y] not in path:
+                    queue.append(capacities[i][y])
+
+
+    return"""
+
+"2e version du parcours en lagrgeur doit marcher normalement"
+
+def Breadth_Search(n, capacities, source=0):
+    visited = []
+    queue = deque([source])
+
+    while queue:
+        current = queue.popleft()
+        if current not in visited:
+            visited.append(current)
+            for neighbor in range(n):
+                if capacities[current][neighbor] != 0 and neighbor not in visited and neighbor not in queue:
+                    queue.append(neighbor)
+
+    return visited
 
 if __name__ == "__main__":
     fichier = "p1.txt"
-    n, capacites, costs = read_file(fichier)
-    display_flow_data(n, capacites, costs)
+    n, capacities, costs = read_file(fichier)
+    display_flow_data(n, capacities, costs)
 
     pp= "proposal 6.txt"
     a, capa, cout = read_file(pp)
@@ -85,3 +131,8 @@ if __name__ == "__main__":
         print("\nBellman Results:\n   Vertex  :   ", distance, "\nPredecessors : ",pred)
     else:
         print("Not a min-costs Problem")
+
+
+    visited_order = Breadth_Search(n, capacities, source=0)
+
+    print("Ordre de visite BFS :", [f"v{i + 1}" for i in visited_order])
