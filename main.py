@@ -117,6 +117,13 @@ def Breadth_Search(n, capacities, source=0):
 
     return visited
 
+def Ford_Fulkerson(n, capacities, source=0):
+    for i in range(n):
+        if capacities[i][-1] == 0: #check que T ait des predecesseurs car sinon c'est deja opti / Donc check si la last column est que 0
+            print("The problem is already solved")
+
+
+
 if __name__ == "__main__":
     fichier = "p1.txt"
     n, capacities, costs = read_file(fichier)
