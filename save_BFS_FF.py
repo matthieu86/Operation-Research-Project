@@ -130,3 +130,27 @@ def print_matrix(matrix, title="Matrix", node_names=None):
     for i in range(n):
         row = [f"{node_names[i]:<3}|"] + [f"{val:>5}" for val in matrix[i]]
         print("".join(row))
+
+
+#Bellman de matt en save remplacer par celui de julien
+def Bellman_algo(n, costs_mat, s = 0):
+
+    predecessor = [None]*n #
+    distances = [float('inf')]*n # Initiate the distance of every vertex to infinty
+    distances[s] = 0 # The distance from the source to itself is 0
+
+    edges = []
+    for i in range(n):
+        for y in range(n):
+            if costs_mat[i][y] != '0' and costs_mat[i][y] != 0: #and i != y
+                edges.append((i,y,costs_mat[i][y]))
+
+
+    # Bellman Algo
+    for v in range(n-1):
+        for i, y, cost in edges:
+            if distances[i] + cost < distances[y]:
+                distances[y] = distances[i] + cost
+                predecessor[y] = i
+
+    return distances, predecessor
