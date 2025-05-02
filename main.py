@@ -56,6 +56,7 @@ def Bellman_algo(n, costs_mat, s = 0):
     distances[s] = 0 # The distance from the source to itself is 0
 
     edges = []
+
     for i in range(n):
         for y in range(n):
             if costs_mat[i][y] != '0' and costs_mat[i][y] != 0: #and i != y
@@ -67,7 +68,10 @@ def Bellman_algo(n, costs_mat, s = 0):
         for i, y, cost in edges:
             if distances[i] + cost < distances[y]:
                 distances[y] = distances[i] + cost
-                predecessor[y] = i
+                if chr(97 + i) == 'a':
+                    predecessor[y] = 's'
+                else:
+                    predecessor[y] = chr(96 + i)
 
     return distances, predecessor
 # C LA QUI FAUT METTRE LA SAVE
@@ -84,7 +88,7 @@ def print_matrix_with_labels(matrix, title="Matrix"):
     labels = ['s'] + [chr(97 + i) for i in range(n - 2)] + ['t']  # ['s', 'a', 'b', ..., 't']
     print(f"\n{title} ({n}x{n})")
     print("    " + "  ".join(f"{labels[j]:>3}" for j in range(n)))
-    print("    " + "----" * n)
+    print("    " + "-----" * n)
     for i in range(n):
         row = [f"{labels[i]:<2}|"] + [f"{matrix[i][j]:>4}" for j in range(n)]
         print(" ".join(row))
@@ -193,12 +197,7 @@ if __name__ == "__main__":
     a, capa, cout = read_file(pp)
     display_flow_data(a, capa, cout)
 
-    if cout:
-        distance, pred = Bellman_algo(a, cout, s=0)
-        print("\nBellman Results:\n   Vertex  :   ", distance, "\nPredecessors : ",pred)
-    else:
-        print("Not a min-costs Problem")
-
+    
 
     #visited_order = Breadth_Search(n, capacities, source=0)
 
@@ -214,3 +213,9 @@ if __name__ == "__main__":
     #print(f"\nFlot maximum de v{source + 1} à v{sink + 1} : {flow}")
 
     print(Ford_Fulkerson(n, capacities))
+
+    if cout:
+        distance, pred = Bellman_algo(a, cout, s=0)
+        print("\nBellman Results:\n   Costs  :   ", distance, "\nPredecessors : ",pred)
+    else:
+        print("Not a min-costs Problem")
