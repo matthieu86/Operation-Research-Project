@@ -70,75 +70,30 @@ def Bellman_algo(n, costs_mat, s = 0):
                 predecessor[y] = i
 
     return distances, predecessor
+# C LA QUI FAUT METTRE LA SAVE
 
-" Peut etre faut ajouter un truc de shortest past ??"
+# C AU DESSUS QUI FAUT METTRE LA SAVE
 
-"Bref la j'en suis à F-F partie 3 projet"
-
-"""
-VERSION 1 
-def Breatdh_Search(n, capacities, source=0):
-    path = []
-    queue = [source]
-    while len(queue) != 0:
-        new = queue[-1]
-        if new not in path:
-            path.append(new)
-            for y in range(n):
-                if capacities[queue[-1]][y] not in path: #and capacities[queue[-1]][y] not in queue
-                    #queue.append(capacities[queue[-1]][y])
-                    queue.append(y)
-                queue.pop(-1)    
-
-                
+# NOUERVZYIDIYUZIYUZDGBIDZPDZIUHDZIUHDZIUHDUHDZIUHDZIUHDZIUHDIUZHDZUIHDIZUHDZIUHDZUDZUIDZHIUIUDZHHIUDZIHUDZUIHDZIUHDZIUHDZIUHDZUHHUIDZUHIODZUHIDZUIHUIHDZHIUDZHUIDZIUHDZUIHDZUIH
 
 
-        for i in range(n):
-            for y in range(n):
-                if capacities[i][y] not in path:
-                    queue.append(capacities[i][y])
-
-
-    return"""
-
-"2e version du parcours en lagrgeur doit marcher normalement"
-
-def Breadth_Search(n, capacities, source=0):
-    visited = []
-    queue = deque([source])
-
-    while queue:
-        current = queue.popleft()
-        if current not in visited:
-            visited.append(current)
-            for neighbor in range(n):
-                if capacities[current][neighbor] != 0 and neighbor not in visited and neighbor not in queue:
-                    queue.append(neighbor)
-
-    return visited
-
-"""
-def Ford_Fulkerson(n, capacities, source=0):
-
+# Affiche une matrice avec des étiquettes s, a, b, ..., t
+# Utilisé pour afficher les matrices de capacités, résiduelles et de flot final
+def print_matrix_with_labels(matrix, title="Matrix"):
+    n = len(matrix)
+    labels = ['s'] + [chr(97 + i) for i in range(n - 2)] + ['t']  # ['s', 'a', 'b', ..., 't']
+    print(f"\n{title} ({n}x{n})")
+    print("    " + "  ".join(f"{labels[j]:>3}" for j in range(n)))
+    print("    " + "----" * n)
     for i in range(n):
-        if capacities[i][-1] == 0: #check que T ait des predecesseurs car sinon c'est deja opti / Donc check si la last column est que 0
-            return "The problem is already solved"
+        row = [f"{labels[i]:<2}|"] + [f"{matrix[i][j]:>4}" for j in range(n)]
+        print(" ".join(row))
 
-    chaine_ameliorante = Breadth_Search(n, capacities, source)
-
-"""
-
-#------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------
-
-"""FF avec une nouvelle version de parcours en largeur (encore)
-car mon precedent parcours L (ui est ecnore en haut) ne faisais pas tous ce qui est necessaire pour FF / Edmond karp
-
-A MODIF POUR AVOIR TOUTES LES ETAPES DEMANDE DANS LE SUJET
-"""
-def breadth_search_augmenting_path(residual, source, sink, parent):
-    n = len(residual)
+# Effectue une recherche en largeur dans le graphe résiduel pour trouver une chaîne améliorante
+# Retourne un tableau des parents s'il existe un chemin de s à t, sinon None
+def Breadth_Search(n, residual, source=0, sink=None):
     visited = [False] * n
+    parent = [None] * n
     queue = deque([source])
     visited[source] = True
 
@@ -146,58 +101,85 @@ def breadth_search_augmenting_path(residual, source, sink, parent):
         u = queue.popleft()
         for v in range(n):
             if not visited[v] and residual[u][v] > 0:
-                parent[v] = u
                 visited[v] = True
+                parent[v] = u
                 queue.append(v)
-                if v == sink:
-                    return True
-    return False
+                if sink is not None and v == sink:
+                    return parent
+    return parent if visited[sink] else None
 
-def reconstruct_path(parent, source, sink):
-    path = []
-    v = sink
-    while v != source:
-        path.insert(0, v)
-        v = parent[v]
-    path.insert(0, source)
-    return path
+# Algorithme de Ford-Fulkerson pour calculer le flot maximum entre s (source) et t (puit)
+def Ford_Fulkerson(n, capacities, source=0, sink=None):
+    if sink is None:
+        sink = n - 1  # Le dernier sommet est le puit t
 
-def print_matrix(matrix, title="Matrix"):
-    n = len(matrix)
-    print(f"\n{title} ({n}x{n})")
-    header = ["    "] + [f"v{j+1:>4}" for j in range(n)]
-    print("".join(header))
-    print("    " + "-----" * n)
-    for i in range(n):
-        row = [f"v{i+1:<3}|"] + [f"{val:>5}" for val in matrix[i]]
-        print("".join(row))
+    print("\n⋆ Affichage de la table des capacités :")
+    print_matrix_with_labels(capacities, "Capacités")
 
-def ford_fulkerson(n, capacities, source, sink):
-    residual = [row[:] for row in capacities]  # graphe résiduel
-    parent = [None] * n
+    flow = [[0] * n for _ in range(n)]  # Matrice des flots initiaux (tous à 0)
+    residual = [row[:] for row in capacities]  # Graphe résiduel initial
     max_flow = 0
-    step = 1
+    iteration = 1
 
-    while breadth_search_augmenting_path(residual, source, sink, parent):
-        path = reconstruct_path(parent, source, sink)
-        path_flow = float('inf')
-        for i in range(len(path) - 1):
-            u, v = path[i], path[i + 1]
-            path_flow = min(path_flow, residual[u][v])
+    print("\nLe graphe résiduel initial est le graphe de départ.")
 
-        print(f"🔁 Chemin augmentant {step} : {' → '.join(f'v{x+1}' for x in path)} (flot = {path_flow})")
-        step += 1
+    while True:
+        print(f"\n⋆ Itération {iteration} :")
+        parent = Breadth_Search(n, residual, source, sink)
 
-        # Appliquer le flot au graphe résiduel
-        for i in range(len(path) - 1):
-            u, v = path[i], path[i + 1]
-            residual[u][v] -= path_flow
-            residual[v][u] += path_flow
+        if not parent:
+            break  # Aucune chaîne améliorante trouvée → fin
 
-        max_flow += path_flow
+        # Reconstruit le chemin s → t à partir du tableau des parents
+        path = []
+        v = sink
+        while v != source:
+            path.append(v)
+            v = parent[v]
+        path.append(source)
+        path.reverse()
 
-    print_matrix(residual, "Graphe résiduel final")
+        # Détermine la capacité minimale (flot possible) dans ce chemin
+        min_capacity = min(residual[parent[v]][v] for v in path[1:])
+
+        labels = ['s'] + [chr(97 + i) for i in range(n - 2)] + ['t']
+        print(" ".join([f"{labels[i]}" for i in range(len(parent)) if parent[i] is not None]))
+        for v in path[1:]:
+            print(f"Π({labels[v]}) = {labels[parent[v]]}")
+
+        print("Détection d’une chaîne améliorante : " + " → ".join(labels[v] for v in path) + f" de flot {min_capacity}.")
+
+        # Met à jour le graphe résiduel et les flots
+        for v in path[1:]:
+            u = parent[v]
+            residual[u][v] -= min_capacity
+            residual[v][u] += min_capacity
+            flow[u][v] += min_capacity
+
+        print("Modifications sur le graphe résiduel :")
+        print_matrix_with_labels(residual, "Graphe Résiduel")
+
+        max_flow += min_capacity
+        iteration += 1
+
+    # Affiche la matrice des flots avec les valeurs / capacités
+    print("\n⋆ Affichage du flot max :")
+    print("Flot final :")
+    labels = ['s'] + [chr(97 + i) for i in range(n - 2)] + ['t']
+    print("     " + "   ".join(f"{l:>3}" for l in labels))
+    print("     " + "----" * n)
+    for i in range(n):
+        row = [f"{labels[i]:<2}|"]
+        for j in range(n):
+            if capacities[i][j] > 0:
+                row.append(f"{flow[i][j]}/{capacities[i][j]:>3}")
+            else:
+                row.append("     ")
+        print(" ".join(row))
+
+    print(f"\nValeur du flot max = {max_flow}")
     return max_flow
+
 #------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------
 
@@ -218,15 +200,17 @@ if __name__ == "__main__":
         print("Not a min-costs Problem")
 
 
-    visited_order = Breadth_Search(n, capacities, source=0)
+    #visited_order = Breadth_Search(n, capacities, source=0)
 
-    print("Ordre de visite BFS :", [f"v{i + 1}" for i in visited_order])
+    #print("Ordre de visite BFS :", [f"v{i + 1}" for i in visited_order])
 
 
     display_flow_data(n, capacities, costs)
 
-    source = 0  # v1
-    sink = n - 1  # v6
+   # source = 0  # v1
+    #sink = n - 1  # v6
 
-    flow = ford_fulkerson(n, capacities, source, sink)
-    print(f"\nFlot maximum de v{source + 1} à v{sink + 1} : {flow}")
+    #flow = ford_fulkerson(n, capacities, source, sink)
+    #print(f"\nFlot maximum de v{source + 1} à v{sink + 1} : {flow}")
+
+    print(Ford_Fulkerson(n, capacities))
