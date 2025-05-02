@@ -183,6 +183,76 @@ def Ford_Fulkerson(n, capacities, source=0, sink=None):
 #------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------
 
+def Push_Relabel(n, capacity, source=0, sink=None):
+    if sink is None:
+        sink = n - 1
+
+    flow = [[0] * n for _ in range(n)]
+    height = [0] * n
+    excess = [0] * n
+
+    height[source] = n
+
+    for v in range(n):
+        flow[source][v] = capacity[source][v]
+        flow[v][source] = -flow[source][v]
+        excess[v] = capacity[source][v]
+        excess[source] -= capacity[source][v]
+
+    def push(u, v):
+        delta = min(excess[u], capacity[u][v] - flow[u][v])
+        flow[u][v] += delta
+        flow[v][u] -= delta
+        excess[u] -= delta
+        excess[v] += delta
+
+    def relabel(u):
+        min_height = float('inf')
+        for v in range(n):
+            if capacity[u][v] - flow[u][v] > 0:
+                min_height = min(min_height, height[v])
+        if min_height < float('inf'):
+            height[u] = min_height + 1
+
+    def discharge(u):
+        while excess[u] > 0:
+            for v in range(n):
+                if capacity[u][v] - flow[u][v] > 0 and height[u] == height[v] + 1:
+                    push(u, v)
+                    if excess[u] == 0:
+                        break
+            else:
+                relabel(u)
+
+    active = [i for i in range(n) if i != source and i != sink and excess[i] > 0]
+    p = 0
+    while p < len(active):
+        u = active[p]
+        old_height = height[u]
+        discharge(u)
+        if height[u] > old_height:
+            active.insert(0, active.pop(p))
+            p = 0
+        else:
+            p += 1
+
+    print("\n⋆ Résultat Push-Relabel :")
+    labels = ['s'] + [chr(97 + i) for i in range(1, n - 1)] + ['t']
+    print("     " + "   ".join(f"{l:>3}" for l in labels))
+    print("     " + "----" * n)
+    for i in range(n):
+        row = [f"{labels[i]:<2}|"]
+        for j in range(n):
+            if capacity[i][j] > 0:
+                row.append(f"{flow[i][j]}/{capacity[i][j]:>3}")
+            else:
+                row.append("     ")
+        print(" ".join(row))
+
+    max_flow = sum(flow[source][i] for i in range(n))
+    print(f"\nValeur du flot max (Push-Relabel) = {max_flow}")
+    return max_flow
+
 
 if __name__ == "__main__":
     fichier = "p1.txt"
@@ -214,3 +284,9 @@ if __name__ == "__main__":
     #print(f"\nFlot maximum de v{source + 1} à v{sink + 1} : {flow}")
 
     print(Ford_Fulkerson(n, capacities))
+
+    print("\n----------------------------------------------------------------------")
+    print("\n----------------------------------------------------------------------")
+    print("\n----------------------------------------------------------------------")
+
+    print(Push_Relabel(n, capacities))
