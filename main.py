@@ -62,8 +62,7 @@ def Bellman_algo(n, costs_mat, s = 0):
         for y in range(n):
             if costs_mat[i][y] != '0' and costs_mat[i][y] != 0: #and i != y
                 edges.append((i,y,costs_mat[i][y]))
-
-
+    
     # Bellman Algo
     for v in range(n-1):
         for i, y, cost in edges:
@@ -73,7 +72,6 @@ def Bellman_algo(n, costs_mat, s = 0):
                     predecessor[y] = 's'
                 else:
                     predecessor[y] = chr(96 + i)
-
     return distances, predecessor
 # C LA QUI FAUT METTRE LA SAVE
 
@@ -367,9 +365,7 @@ Algorithme pour résoudre le flot à coût minimal.
 ⋆ Les modifications sur le graphe résiduel. 
 """
 
-
-
-
+"""
 #############################################
 if __name__ == "__main__":
     fichier = "p1.txt"
@@ -418,3 +414,20 @@ if __name__ == "__main__":
     skibidi= "proposal 8.txt"
     toilette, gyatt, rizz = read_file(skibidi)
     Min_Cost_Flow(toilette, gyatt, rizz)
+"""
+
+
+
+while True:
+    chosen_proposition = input("Please enter the number or the proposal you want to use. (1 to 10)")
+    chosen_proposition = "proposal " + chosen_proposition + ".txt"
+    n, capacity, costs = read_file(chosen_proposition)
+    display_flow_data(n, capacity, costs)
+    if costs:
+        BelCosts, BelPred = Bellman_algo(n, costs)
+        print("\nBellman Results:\n   Costs  :   ", BelCosts, "\nPredecessors : ",BelPred)
+        Min_Cost_Flow(n, capacity, costs)
+    else :
+        print(Ford_Fulkerson(n, capacity))
+        print(Push_Relabel(n, capacity))
+    
