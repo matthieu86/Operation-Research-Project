@@ -410,10 +410,6 @@ if __name__ == "__main__":
         Min_Cost_Flow(a, capa, cout)
     else:
         print("No costs matrix available.")
-
-    skibidi= "proposal 8.txt"
-    toilette, gyatt, rizz = read_file(skibidi)
-    Min_Cost_Flow(toilette, gyatt, rizz)
 """
 
 
