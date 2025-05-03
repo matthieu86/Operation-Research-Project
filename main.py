@@ -420,7 +420,7 @@ if __name__ == "__main__":
 
 while True:
     chosen_proposition = input("Please enter the number or the proposal you want to use. (1 to 10)")
-    chosen_proposition = "proposal " + chosen_proposition + ".txt"
+    chosen_proposition = "proposals Projet OR/proposal " + chosen_proposition + ".txt"
     n, capacity, costs = read_file(chosen_proposition)
     display_flow_data(n, capacity, costs)
     if costs:
