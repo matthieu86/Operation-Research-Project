@@ -1,4 +1,5 @@
 from collections import deque
+import time
 def read_file(file):
     with open(file, "r") as f:
         lines = f.readlines()
@@ -166,6 +167,7 @@ def Min_Cost_Flow(n, capacities, costs, source=0, sink=None):
                 row.append(" " * cell_width)
         print("".join(row))
     print(f"\nTotal flow cost = {total_cost}")
+    time.sleep(0.001)
     return total_flow, total_cost
 
 # Affiche une matrice avec des étiquettes s, a, b, ..., t
@@ -269,6 +271,7 @@ def Ford_Fulkerson(n, capacities, source=0, sink=None):
         print(" ".join(row))
 
     print(f"\nMax flow value= {max_flow}")
+    time.sleep(0.001)
     return max_flow
 
 #------------------------------------------------------------------------------------------
@@ -343,6 +346,8 @@ def Push_Relabel(n, capacity, source=0, sink=None):
 
     max_flow = sum(flow[source][i] for i in range(n))
     print(f"\nMaximum-flow value (Push-Relabel) = {max_flow}")
+    time.sleep(0.001)
+
     return max_flow
 
 
