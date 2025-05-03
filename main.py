@@ -80,6 +80,93 @@ def Bellman_algo(n, costs_mat, s = 0):
 
 # NOUERVZYIDIYUZIYUZDGBIDZPDZIUHDZIUHDZIUHDUHDZIUHDZIUHDZIUHDIUZHDZUIHDIZUHDZIUHDZUDZUIDZHIUIUDZHHIUDZIHUDZUIHDZIUHDZIUHDZIUHDZUHHUIDZUHIODZUHIDZUIHUIHDZHIUDZHUIDZIUHDZUIHDZUIH
 
+def Min_Cost_Flow(n, capacities, costs, source=0, sink=None):
+    if sink is None:
+        sink = n - 1
+
+    flow = [[0] * n for _ in range(n)]
+    residual_cap = [row[:] for row in capacities]
+    residual_cost = [[costs[i][j] if capacities[i][j] > 0 else 0 for j in range(n)] for i in range(n)]
+    total_flow = 0
+    total_cost = 0
+    iteration = 1
+
+    while True:
+        # === 1. Bellman-Ford sur le graphe résiduel ===
+        dist = [float('inf')] * n
+        parent = [-1] * n
+        dist[source] = 0
+
+        print(f"\n⋆ Bellman-Ford table (Iteration n° {iteration}) :")
+        for _ in range(n - 1):
+            for u in range(n):
+                for v in range(n):
+                    if residual_cap[u][v] > 0 and dist[u] + residual_cost[u][v] < dist[v]:
+                        dist[v] = dist[u] + residual_cost[u][v]
+                        parent[v] = u
+
+        if parent[sink] == -1:
+            print("\nNo upgrading chain found.")
+            break
+
+        # === 2. Reconstruire le chemin et calculer le flot min possible ===
+        path = []
+        v = sink
+        while v != source:
+            path.append(v)
+            v = parent[v]
+        path.append(source)
+        path.reverse()
+
+        min_cap = float('inf')
+        for i in range(len(path) - 1):
+            u, v = path[i], path[i + 1]
+            min_cap = min(min_cap, residual_cap[u][v])
+
+        labels = ['s'] + [chr(97 + i) for i in range(n - 2)] + ['t']
+        print(" → ".join([labels[v] for v in path]) + f" with flow = {min_cap}")
+
+        # === 3. Mise à jour du graphe résiduel et coût ===
+        for i in range(len(path) - 1):
+            u, v = path[i], path[i + 1]
+            residual_cap[u][v] -= min_cap
+            residual_cap[v][u] += min_cap
+            flow[u][v] += min_cap
+            residual_cost[v][u] = -costs[u][v]  # coût inverse
+
+        total_flow += min_cap
+        total_cost += min_cap * dist[sink]
+
+        print("Upgraded residual graph :")
+        print_matrix_with_labels(residual_cap, f"Residual Graph {iteration}")
+
+        iteration += 1
+
+        # === Affichage du flot final ===
+    print("\n⋆ Final flow with costs:")
+
+    # Génération des labels : 's', 'a', ..., 't'
+    labels = ['s'] + [chr(97 + i) for i in range(n - 2)] + ['t']
+
+    # Largeur fixe pour chaque colonne
+    cell_width = 7
+
+    # En-tête
+    print("     " + "".join(f"{labels[j]:>{cell_width}}" for j in range(n)))
+    print("     " + "-" * (cell_width * n))
+
+    # Lignes de la matrice
+    for i in range(n):
+        row = [f"{labels[i]:<3}|"]
+        row.append("    ")
+        for j in range(n):
+            if capacities[i][j] > 0:
+                row.append(f"{flow[i][j]:>2}/{capacities[i][j]:<3}".rjust(cell_width))
+            else:
+                row.append(" " * cell_width)
+        print("".join(row))
+    print(f"\nTotal flow cost = {total_cost}")
+    return total_flow, total_cost
 
 # Affiche une matrice avec des étiquettes s, a, b, ..., t
 # Utilisé pour afficher les matrices de capacités, résiduelles et de flot final
@@ -117,18 +204,18 @@ def Ford_Fulkerson(n, capacities, source=0, sink=None):
     if sink is None:
         sink = n - 1  # Le dernier sommet est le puit t
 
-    print("\n⋆ Affichage de la table des capacités :")
-    print_matrix_with_labels(capacities, "Capacités")
+    print("\n⋆ Capacity table printing :")
+    print_matrix_with_labels(capacities, "Capacities")
 
     flow = [[0] * n for _ in range(n)]  # Matrice des flots initiaux (tous à 0)
     residual = [row[:] for row in capacities]  # Graphe résiduel initial
     max_flow = 0
     iteration = 1
 
-    print("\nLe graphe résiduel initial est le graphe de départ.")
+    print("\nThe residual graph is the initial graph ")
 
     while True:
-        print(f"\n⋆ Itération {iteration} :")
+        print(f"\n⋆ Iteration {iteration} :")
         parent = Breadth_Search(n, residual, source, sink)
 
         if not parent:
@@ -151,7 +238,7 @@ def Ford_Fulkerson(n, capacities, source=0, sink=None):
         for v in path[1:]:
             print(f"Π({labels[v]}) = {labels[parent[v]]}")
 
-        print("Détection d’une chaîne améliorante : " + " → ".join(labels[v] for v in path) + f" de flot {min_capacity}.")
+        print("Upgrading chain detection : " + " → ".join(labels[v] for v in path) + f" of flow {min_capacity}.")
 
         # Met à jour le graphe résiduel et les flots
         for v in path[1:]:
@@ -160,15 +247,15 @@ def Ford_Fulkerson(n, capacities, source=0, sink=None):
             residual[v][u] += min_capacity
             flow[u][v] += min_capacity
 
-        print("Modifications sur le graphe résiduel :")
-        print_matrix_with_labels(residual, "Graphe Résiduel")
+        print("Residual graph modification :")
+        print_matrix_with_labels(residual, "Residual Graph")
 
         max_flow += min_capacity
         iteration += 1
 
     # Affiche la matrice des flots avec les valeurs / capacités
-    print("\n⋆ Affichage du flot max :")
-    print("Flot final :")
+    print("\n⋆ Max flow printing :")
+    print("Final flow :")
     labels = ['s'] + [chr(97 + i) for i in range(n - 2)] + ['t']
     print("     " + "   ".join(f"{l:>3}" for l in labels))
     print("     " + "----" * n)
@@ -181,7 +268,7 @@ def Ford_Fulkerson(n, capacities, source=0, sink=None):
                 row.append("     ")
         print(" ".join(row))
 
-    print(f"\nValeur du flot max = {max_flow}")
+    print(f"\nMax flow value= {max_flow}")
     return max_flow
 
 #------------------------------------------------------------------------------------------
@@ -240,21 +327,22 @@ def Push_Relabel(n, capacity, source=0, sink=None):
         else:
             p += 1
 
-    print("\n⋆ Résultat Push-Relabel :")
+    print("\n⋆ Push-Relabel Results:")
     labels = ['s'] + [chr(97 + i) for i in range(1, n - 1)] + ['t']
     print("     " + "   ".join(f"{l:>3}" for l in labels))
     print("     " + "----" * n)
     for i in range(n):
         row = [f"{labels[i]:<2}|"]
+        row.append(" ")
         for j in range(n):
             if capacity[i][j] > 0:
-                row.append(f"{flow[i][j]}/{capacity[i][j]:>3}")
+                row.append(f"{flow[i][j]}/{capacity[i][j]:<3}")
             else:
                 row.append("     ")
         print(" ".join(row))
 
     max_flow = sum(flow[source][i] for i in range(n))
-    print(f"\nValeur du flot max (Push-Relabel) = {max_flow}")
+    print(f"\nMaximum-flow value (Push-Relabel) = {max_flow}")
     return max_flow
 
 
@@ -304,6 +392,7 @@ if __name__ == "__main__":
 
     print(Ford_Fulkerson(n, capacities))
 
+
     if cout:
         distance, pred = Bellman_algo(a, cout, s=0)
         print("\nBellman Results:\n   Costs  :   ", distance, "\nPredecessors : ",pred)
@@ -314,3 +403,13 @@ if __name__ == "__main__":
     print("\n----------------------------------------------------------------------")
 
     print(Push_Relabel(n, capacities))
+    print(costs)
+    
+    if cout:
+        Min_Cost_Flow(a, capa, cout)
+    else:
+        print("No costs matrix available.")
+
+    skibidi= "proposal 8.txt"
+    toilette, gyatt, rizz = read_file(skibidi)
+    Min_Cost_Flow(toilette, gyatt, rizz)
