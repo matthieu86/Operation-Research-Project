@@ -258,6 +258,26 @@ def Push_Relabel(n, capacity, source=0, sink=None):
     return max_flow
 
 
+
+""" 
+MIN COST PROBLEM A PARTIR DE DESSOUS :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+jai ff hier soir. Mais vous pouvez demander à chat de le faire normalement il fait un truc pas mal.
+
+Demander lui de faire un truc py pour resoudre problm de flot a cout min en utilisant l'algo de bellman ford.
+et faut qu'il respect les conditions suiivantes:
+
+Algorithme pour résoudre le flot à coût minimal.
+⋆ La table détaillée de Bellman.
+⋆ Valeur de flot d’une chaîne améliorante potentiellement trouvée.
+⋆ Les modifications sur le graphe résiduel. 
+"""
+
+
+
+
+#############################################
 if __name__ == "__main__":
     fichier = "p1.txt"
     n, capacities, costs = read_file(fichier)
