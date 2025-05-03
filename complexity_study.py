@@ -2,7 +2,6 @@ import random
 import time
 import matplotlib.pyplot as plt
 
-
 # -----------------------------
 # Helper: Breadth-First Search for Ford–Fulkerson
 # -----------------------------
@@ -21,7 +20,6 @@ def Breadth_Search(n, residual, source, sink):
                 if v == sink:
                     return parent
     return None if not visited[sink] else parent
-
 
 # -----------------------------
 # Ford–Fulkerson (debug printing removed)
@@ -61,7 +59,6 @@ def Ford_Fulkerson(n, capacities, source=0, sink=None):
         max_flow += min_capacity
 
     return max_flow
-
 
 # -----------------------------
 # Push–Relabel (debug printing removed)
@@ -120,7 +117,6 @@ def Push_Relabel(n, capacity, source=0, sink=None):
 
     max_flow = sum(flow[source][i] for i in range(n))
     return max_flow
-
 
 # -----------------------------
 # Min–Cost Flow (debug printing removed)
@@ -182,7 +178,6 @@ def Min_Cost_Flow(n, capacities, costs, source=0, sink=None):
 
     return total_flow, total_cost
 
-
 # -----------------------------
 # Random Flow Problem Generator
 # -----------------------------
@@ -200,15 +195,15 @@ def generate_flow_problem(n):
 
     return capacities, costs
 
-
 # -----------------------------
 # Complexity Study: Test Functions for Each Algorithm
 # -----------------------------
 def test_ford_fulkerson():
-    global results_ff  # Declare as global to store results
-    n_values = [10, 20, 40, 100, 400]
+    global results_ff  # Store results globally
+    n_values = [10, 20, 40, 100]
     num_iterations = 100
     results_ff = []  # Store results globally
+    avg_times_ff = []  # Store average times for line plot
 
     for n in n_values:
         times = []
@@ -220,27 +215,36 @@ def test_ford_fulkerson():
             elapsed = time.process_time() - start
             times.append(elapsed)
         results_ff.append((n, times))
+        avg_times_ff.append(sum(times) / len(times))  # Compute the average
 
     # Plot the results
     plt.figure(figsize=(8, 6))
+
+    # Scatter plot for individual execution times
     for n, t_list in results_ff:
-        plt.scatter([n] * len(t_list), t_list, marker='x', c='red',
-                    label="Ford–Fulkerson" if n == n_values[0] else "")
+        plt.scatter([n] * len(t_list), t_list, marker='x', c='red', label="Ford-Fulkerson (individual runs)" if n == n_values[0] else "")
+
+    # Line plot connecting the averages
+    plt.plot(n_values, avg_times_ff, linestyle='-', marker='o', color='black', label="Ford-Fulkerson (average)")
+
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("Problem size n")
     plt.ylabel("Execution time (s)")
-    plt.title("Complexity Study: Ford–Fulkerson")
+    plt.title("Etude de Complexité: Ford-Fulkerson")
     plt.legend()
     plt.grid(True, which="both", ls="--", alpha=0.5)
     plt.show()
 
 
+
+
 def test_push_relabel():
-    global results_pr  # Declare as global to store results
-    n_values = [10, 20, 40, 100, 400]
+    global results_pr  # Store results globally
+    n_values = [10, 20, 40, 100,400,1000]
     num_iterations = 100
     results_pr = []  # Store results globally
+    avg_times_pr = []  # Store average times for line plot
 
     for n in n_values:
         times = []
@@ -252,20 +256,27 @@ def test_push_relabel():
             elapsed = time.process_time() - start
             times.append(elapsed)
         results_pr.append((n, times))
+        avg_times_pr.append(sum(times) / len(times))  # Compute the average
 
     # Plot the results
     plt.figure(figsize=(8, 6))
+
+    # Scatter plot for individual execution times
     for n, t_list in results_pr:
-        plt.scatter([n] * len(t_list), t_list, marker='o', c='blue',
-                    label="Push–Relabel" if n == n_values[0] else "")
+        plt.scatter([n] * len(t_list), t_list, marker='o', c='blue', label="Push-Relabel (individual runs)" if n == n_values[0] else "")
+
+    # Line plot connecting the averages
+    plt.plot(n_values, avg_times_pr, linestyle='-', marker='o', color='black', label="Push-Relabel (average)")
+
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("Problem size n")
     plt.ylabel("Execution time (s)")
-    plt.title("Complexity Study: Push–Relabel")
+    plt.title("Complexity Study: Push-Relabel")
     plt.legend()
     plt.grid(True, which="both", ls="--", alpha=0.5)
     plt.show()
+
 
 
 def test_min_cost_flow():
@@ -353,7 +364,6 @@ def test_ratio_ff_pr():
 
 if __name__ == "__main__":
     test_ford_fulkerson()  # Run Ford-Fulkerson test first
-    test_push_relabel()  # Run Push-Relabel test next
-    test_ratio_ff_pr()  # Run ratio test AFTER the previous two tests
-
+    test_push_relabel()    # Run Push-Relabel test next
+    test_ratio_ff_pr()     # Run ratio test AFTER the previous two tests
 
