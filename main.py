@@ -79,94 +79,72 @@ def Bellman_algo(n, costs_mat, s = 0):
 
 # NOUERVZYIDIYUZIYUZDGBIDZPDZIUHDZIUHDZIUHDUHDZIUHDZIUHDZIUHDIUZHDZUIHDIZUHDZIUHDZUDZUIDZHIUIUDZHHIUDZIHUDZUIHDZIUHDZIUHDZIUHDZUHHUIDZUHIODZUHIDZUIHUIHDZHIUDZHUIDZIUHDZUIHDZUIH
 
-def Min_Cost_Flow(n, capacities, costs, source=0, sink=None):
+INF = float('inf')
+
+def bellman_ford(n, residual_capacity, residual_cost, source, sink):
+    dist = [INF] * n
+    parent = [-1] * n
+    dist[source] = 0
+
+    for _ in range(n - 1):
+        for u in range(n):
+            for v in range(n):
+                if residual_capacity[u][v] > 0 and dist[v] > dist[u] + residual_cost[u][v]:
+                    dist[v] = dist[u] + residual_cost[u][v]
+                    parent[v] = u
+
+    if dist[sink] == INF:
+        return None, None
+
+    return parent, dist
+
+def min_cost_max_flow(n, capacity, cost, source=0, sink=None):
     if sink is None:
         sink = n - 1
 
-    flow = [[0] * n for _ in range(n)]
-    residual_cap = [row[:] for row in capacities]
-    residual_cost = [[costs[i][j] if capacities[i][j] > 0 else 0 for j in range(n)] for i in range(n)]
-    total_flow = 0
+    flow = 0
     total_cost = 0
-    iteration = 1
+
+    # Initialize residual graphs
+    residual_capacity = [row[:] for row in capacity]
+    residual_cost = [row[:] for row in cost]
+
+    # Add reverse edges for residual cost
+    for u in range(n):
+        for v in range(n):
+            if capacity[u][v] > 0 and residual_capacity[v][u] == 0:
+                residual_capacity[v][u] = 0
+                residual_cost[v][u] = -cost[u][v]
 
     while True:
-        # === 1. Bellman-Ford sur le graphe résiduel ===
-        dist = [float('inf')] * n
-        parent = [-1] * n
-        dist[source] = 0
+        parent, dist = bellman_ford(n, residual_capacity, residual_cost, source, sink)
+        if parent is None:
+            break  # No more augmenting path
 
-        print(f"\n⋆ Bellman-Ford table (Iteration n° {iteration}) :")
-        for _ in range(n - 1):
-            for u in range(n):
-                for v in range(n):
-                    if residual_cap[u][v] > 0 and dist[u] + residual_cost[u][v] < dist[v]:
-                        dist[v] = dist[u] + residual_cost[u][v]
-                        parent[v] = u
-
-        if parent[sink] == -1:
-            print("\nNo upgrading chain found.")
-            break
-
-        # === 2. Reconstruire le chemin et calculer le flot min possible ===
-        path = []
+        # Find bottleneck capacity (min residual capacity along the path)
+        path_flow = INF
         v = sink
         while v != source:
-            path.append(v)
-            v = parent[v]
-        path.append(source)
-        path.reverse()
+            u = parent[v]
+            path_flow = min(path_flow, residual_capacity[u][v])
+            v = u
 
-        min_cap = float('inf')
-        for i in range(len(path) - 1):
-            u, v = path[i], path[i + 1]
-            min_cap = min(min_cap, residual_cap[u][v])
+        # Update capacities and cost
+        v = sink
+        while v != source:
+            u = parent[v]
+            residual_capacity[u][v] -= path_flow
+            residual_capacity[v][u] += path_flow
+            total_cost += path_flow * residual_cost[u][v]
+            v = u
 
-        labels = ['s'] + [chr(97 + i) for i in range(n - 2)] + ['t']
-        print(" → ".join([labels[v] for v in path]) + f" with flow = {min_cap}")
+        flow += path_flow
 
-        # === 3. Mise à jour du graphe résiduel et coût ===
-        for i in range(len(path) - 1):
-            u, v = path[i], path[i + 1]
-            residual_cap[u][v] -= min_cap
-            residual_cap[v][u] += min_cap
-            flow[u][v] += min_cap
-            residual_cost[v][u] = -costs[u][v]  # coût inverse
+    return flow, total_cost
 
-        total_flow += min_cap
-        total_cost += min_cap * dist[sink]
 
-        print("Upgraded residual graph :")
-        print_matrix_with_labels(residual_cap, f"Residual Graph {iteration}")
 
-        iteration += 1
 
-        # === Affichage du flot final ===
-    print("\n⋆ Final flow with costs:")
-
-    # Génération des labels : 's', 'a', ..., 't'
-    labels = ['s'] + [chr(97 + i) for i in range(n - 2)] + ['t']
-
-    # Largeur fixe pour chaque colonne
-    cell_width = 7
-
-    # En-tête
-    print("     " + "".join(f"{labels[j]:>{cell_width}}" for j in range(n)))
-    print("     " + "-" * (cell_width * n))
-
-    # Lignes de la matrice
-    for i in range(n):
-        row = [f"{labels[i]:<3}|"]
-        row.append("    ")
-        for j in range(n):
-            if capacities[i][j] > 0:
-                row.append(f"{flow[i][j]:>2}/{capacities[i][j]:<3}".rjust(cell_width))
-            else:
-                row.append(" " * cell_width)
-        print("".join(row))
-    print(f"\nTotal flow cost = {total_cost}")
-    time.sleep(0.001)
-    return total_flow, total_cost
 
 # Affiche une matrice avec des étiquettes s, a, b, ..., t
 # Utilisé pour afficher les matrices de capacités, résiduelles et de flot final
@@ -411,7 +389,7 @@ if __name__ == "__main__":
     else:
         print("No costs matrix available.")
 """
-
+ 
 
 
 while True:
@@ -420,9 +398,12 @@ while True:
     n, capacity, costs = read_file(chosen_proposition)
     display_flow_data(n, capacity, costs)
     if costs:
-        BelCosts, BelPred = Bellman_algo(n, costs)
-        print("\nBellman Results:\n   Costs  :   ", BelCosts, "\nPredecessors : ",BelPred)
-        Min_Cost_Flow(n, capacity, costs)
+        #BelCosts, BelPred = Bellman_algo(n, costs)
+        #print("\nBellman Results:\n   Costs  :   ", BelCosts, "\nPredecessors : ",BelPred)
+        #Min_Cost_Flow(n, capacity, costs)
+        flow, cost = min_cost_max_flow(n, capacity, costs)
+        print(f"\nMax flow = {flow}, Min cost = {cost}")
+
     else :
         print(Ford_Fulkerson(n, capacity))
         print(Push_Relabel(n, capacity))
